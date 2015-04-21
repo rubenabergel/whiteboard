@@ -1,10 +1,14 @@
-<!doctype html>
+<!-- <!doctype html> -->
 <html>
   <head>
     <title>Socket.IO chat</title>
   </head>
+  <script src="/angoose/angoose-client.js"></script>
+  <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+
   <script src="/socket.io/socket.io.js"></script>
   <script type="text/javascript">
+
 
 var socket = io();
 var canvas, ctx, flag = false,
@@ -35,6 +39,8 @@ function init() {
     canvas.addEventListener("mouseout", function (e) {
         findxy('out', e)
     }, false);
+
+
 }
 
 function color(obj) {
@@ -91,6 +97,22 @@ socket.on('drawing', function(drawObj){
     ctx.closePath();
     });
 
+socket.emit('getUrl', {'currentUrl':window.location.href});
+
+
+//get old drawings
+socket.on('PreviousDrawing', function(drawObj){
+    drawObj.forEach(function(element){
+        ctx.beginPath();
+        ctx.moveTo(element.prevX, element.prevY);
+        ctx.lineTo(element.currX, element.currY);
+        ctx.strokeStyle = x;
+        ctx.lineWidth = y;
+        ctx.stroke();
+        ctx.closePath();
+        })
+    });
+
 
 function erase() {
     var m = confirm("Want to clear");
@@ -138,7 +160,11 @@ function findxy(res, e) {
         }
     }
 }
+function getCurrentUrl(){
+    return window.location.href;
+}
 </script>
+<button onclick="getCurrentUrl()"></button>
   <body onload="init()">
     <canvas id="can" width="400" height="400" style="position:absolute;top:10%;left:10%;border:2px solid;"></canvas>
     <div style="position:absolute;top:12%;left:43%;">Choose Color</div>

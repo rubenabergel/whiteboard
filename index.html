@@ -69,7 +69,6 @@ function color(obj) {
 
 
 
-
 function draw() {
     ctx.beginPath();
     socket.emit('drawing', {'prevX':prevX, 'prevY':prevY,'currX':currX, 'currY':currY});
@@ -90,7 +89,6 @@ socket.on('drawing', function(drawObj){
     ctx.lineWidth = y;
     ctx.stroke();
     ctx.closePath();
-    receive();
     });
 
 
@@ -105,6 +103,7 @@ function erase() {
 function save() {
     document.getElementById("canvasimg").style.border = "2px solid";
     var dataURL = canvas.toDataURL();
+    console.log(dataURL);
     document.getElementById("canvasimg").src = dataURL;
     document.getElementById("canvasimg").style.display = "inline";
 }

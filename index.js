@@ -2,67 +2,81 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
-var currentRoom;
+
 
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://rubenabergel:qwertyuiop@dogen.mongohq.com:10047/whiteboardDB');
-
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 
 
 var Rooms = mongoose.model('Rooms', { name: String , DrawingObj : [] });
-var Cat = mongoose.model('Cat', { name: String });
+var userCount = -1;
 
-var kitty = new Cat({ name: 'Zildjian' });
-kitty.save(function (err) {
-    console.log('saved');
-  if (err) // ...
-  console.log('meow');
-});
+var ColorPerRooms = {};
+var currentRoomName;
 
 
 app.get('/*', function(req, res){
   res.sendfile('index.html');
 });
-
-var userCount = 0;
-
+var roomUrl;
+//checking new connectio for color assignment
 io.on('connect', function(user) {
-  userCount++;
-  console.log('user',userCount, user.handshake.headers.referer);
- });
+  userCount ++;
+  roomUrl = user.handshake.headers.referer;
+  if (!ColorPerRooms[roomUrl] ){
+      ColorPerRooms[roomUrl] = { userCount : 0 };
+  }else{
+      ColorPerRooms[roomUrl].userCount++;
+  }
+  // io.emit('colorPerRoom', ColorPerRooms);
+  io.emit('color', userCount);
+});
 
 
 io.on('connection', function(socket){
-    socket.on('drawing', function(drawObj){
+
+  // checking disconnection
+  socket.on('disconnect', function (user) {
+        userCount--;
+  });
+
+  // getting room history
+  socket.on('getUrl', function(url){
+      currentRoomName = url.currentUrl;
+      var promise = Rooms.findOne({'name':url.currentUrl}).exec();
+      promise.then(function(data){
+        if ( data ) {
+          console.log(data);
+          currentRoom = data._id;
+          io.emit('PreviousDrawing', data.DrawingObj);
+        }else{
+          var currentUrl = new Rooms({ name: url.currentUrl, DrawingObj:[], ip:'ok' });
+                                  currentUrl.save(function (err) {
+                                  console.log('saved');
+                                  if (err) // ...
+                                  console.log('err', err);
+                                });
+          currentRoom = currentUrl._id;
+        }
+      });
+  });
+
+    // sending live drawing
+  socket.on('drawing', function(drawObj){
+    console.log(drawObj);
       //saving all new drawing
-          console.log('curent room update',currentRoom);
-
-        Rooms.update({_id: currentRoom},{ $push : { DrawingObj : drawObj  }},  function(err, els){
+      Rooms.update({_id: currentRoom},{ $push : { DrawingObj : drawObj  }},  function(err, els){
           console.log('err',err, els);
-        });
+      });
       // emiting new live drawing
+      if ( currentRoomName === roomUrl){
+        // console.log(currentRoomName ,receivedUrl)
         io.emit('drawing', drawObj);
-    });
+      }
 
-    socket.on('getUrl', function(url){
-        var promise = Rooms.findOne({'name':url.currentUrl}).exec();
-        promise.then(function(data){
-          if ( data ) {
-            currentRoom = data._id;
-            io.emit('PreviousDrawing', data.DrawingObj);
-          }else{
-            var currentUrl = new Rooms({ name: url.currentUrl, DrawingObj:[], ip:'ok' });
-                                    currentUrl.save(function (err) {
-                                    console.log('saved');
-                                    if (err) // ...
-                                    console.log('err', err);
-                                  });
-            currentRoom = currentUrl._id;
-          }
-        })
-    });
+  });
 
 });
 

@@ -3,7 +3,6 @@
   <head>
     <title>Socket.IO chat</title>
   </head>
-  <script src="/angoose/angoose-client.js"></script>
   <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
 
   <script src="/socket.io/socket.io.js"></script>
@@ -18,8 +17,10 @@ var canvas, ctx, flag = false,
     currY = 0,
     dot_flag = false;
 
-var x = "black",
-    y = 2;
+var x = "black", // stroke style
+    y = 2;  // line witdh
+
+
 
 function init() {
     canvas = document.getElementById('can');
@@ -43,41 +44,12 @@ function init() {
 
 }
 
-function color(obj) {
-    switch (obj.id) {
-        case "green":
-            x = "green";
-            break;
-        case "blue":
-            x = "blue";
-            break;
-        case "red":
-            x = "red";
-            break;
-        case "yellow":
-            x = "yellow";
-            break;
-        case "orange":
-            x = "orange";
-            break;
-        case "black":
-            x = "black";
-            break;
-        case "white":
-            x = "white";
-            break;
-    }
-    if (x == "white") y = 14;
-    else y = 2;
-
-}
-
 
 
 
 function draw() {
     ctx.beginPath();
-    socket.emit('drawing', {'prevX':prevX, 'prevY':prevY,'currX':currX, 'currY':currY});
+    socket.emit('drawing', {'prevX':prevX, 'prevY':prevY,'currX':currX, 'currY':currY, 'color': x });
     ctx.moveTo(prevX, prevY);
     ctx.lineTo(currX, currY);
     ctx.strokeStyle = x;
@@ -91,7 +63,7 @@ socket.on('drawing', function(drawObj){
     ctx.beginPath();
     ctx.moveTo(drawObj.prevX, drawObj.prevY);
     ctx.lineTo(drawObj.currX, drawObj.currY);
-    ctx.strokeStyle = x;
+    ctx.strokeStyle = drawObj.x;
     ctx.lineWidth = y;
     ctx.stroke();
     ctx.closePath();
@@ -102,34 +74,35 @@ socket.emit('getUrl', {'currentUrl':window.location.href});
 
 //get old drawings
 socket.on('PreviousDrawing', function(drawObj){
+    console.log('je suis arrve', drawObj);
     drawObj.forEach(function(element){
         ctx.beginPath();
         ctx.moveTo(element.prevX, element.prevY);
         ctx.lineTo(element.currX, element.currY);
-        ctx.strokeStyle = x;
+        ctx.strokeStyle = element.color;
         ctx.lineWidth = y;
         ctx.stroke();
         ctx.closePath();
         })
     });
 
+socket.on('color', function(color){
+    x = allColors[color];
+})
 
-function erase() {
-    var m = confirm("Want to clear");
-    if (m) {
-        ctx.clearRect(0, 0, w, h);
-        document.getElementById("canvasimg").style.display = "none";
-    }
-}
+// socket.on('colorPerRoom', function(CPR){
+//     console.log('je recoi colorpersroon', CPR);
 
-function save() {
-    document.getElementById("canvasimg").style.border = "2px solid";
-    var dataURL = canvas.toDataURL();
-    console.log(dataURL);
-    document.getElementById("canvasimg").src = dataURL;
-    document.getElementById("canvasimg").style.display = "inline";
-}
+//     for (var key in CPR ){
+//         console.log(window.location.href, key)
+//         if ( window.location.href === key ){
+//             console.log('usercc',allColors[CPR[key].userCount]);
+//              x = allColors[CPR[key].userCount];
+//         }
 
+//     }
+//     // x = allColors[color];
+// })
 function findxy(res, e) {
     if (res == 'down') {
         prevX = currX;
@@ -163,42 +136,10 @@ function findxy(res, e) {
 function getCurrentUrl(){
     return window.location.href;
 }
+
+var allColors = ["red","blue","green","yellow","black","Fuchsia","Brown","Gainsboro","GhostWhite","Gold","GoldenRod","Gray","Grey","Green","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory","Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue","LightCoral","LightCyan","LightGoldenRodYellow","LightGray","LightGrey","LightGreen","LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray","LightSlateGrey","LightSteelBlue","LightYellow","Lime","LimeGreen","Linen","Magenta","Maroon","MediumAquaMarine","MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue","MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream","MistyRose","Moccasin","NavajoWhite","Navy","OldLace","Olive","OliveDrab","Orange","OrangeRed","Orchid","PaleGoldenRod","PaleGreen","PaleTurquoise","PaleVioletRed","PapayaWhip","PeachPuff","Peru","Pink","Plum","PowderBlue","Purple","Red","RosyBrown","RoyalBlue","SaddleBrown","Salmon"];
 </script>
-<button onclick="getCurrentUrl()"></button>
   <body onload="init()">
     <canvas id="can" width="400" height="400" style="position:absolute;top:10%;left:10%;border:2px solid;"></canvas>
-    <div style="position:absolute;top:12%;left:43%;">Choose Color</div>
-    <div style="position:absolute;top:15%;left:45%;width:10px;height:10px;background:green;" id="green" onclick="color(this)"></div>
-    <div style="position:absolute;top:15%;left:46%;width:10px;height:10px;background:blue;" id="blue" onclick="color(this)"></div>
-    <div style="position:absolute;top:15%;left:47%;width:10px;height:10px;background:red;" id="red" onclick="color(this)"></div>
-    <div style="position:absolute;top:17%;left:45%;width:10px;height:10px;background:yellow;" id="yellow" onclick="color(this)"></div>
-    <div style="position:absolute;top:17%;left:46%;width:10px;height:10px;background:orange;" id="orange" onclick="color(this)"></div>
-    <div style="position:absolute;top:17%;left:47%;width:10px;height:10px;background:black;" id="black" onclick="color(this)"></div>
-    <div style="position:absolute;top:20%;left:43%;">Eraser</div>
-    <div style="position:absolute;top:22%;left:45%;width:15px;height:15px;background:white;border:2px solid;" id="white" onclick="color(this)"></div>
-    <img id="canvasimg" style="position:absolute;top:10%;left:52%;" style="display:none;">
-    <input type="button" value="save" id="btn" size="30" onclick="save()" style="position:absolute;top:55%;left:10%;">
-    <input type="button" value="clear" id="clr" size="23" onclick="erase()" style="position:absolute;top:55%;left:15%;">
 </body>
-
- <!--  <body>
-    <ul id="messages"></ul>
-    <form action="">
-      <input id="m" autocomplete="off" /><button>Send</button>
-    </form>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
-    <script>
-    var socket = io();
-    $('form').submit(function(){
-    socket.emit('chat message', $('#m').val());
-      $('#m').val('');
-      return false;
-    });
-
-    socket.on('chat message', function(msg){
-      $('#messages').append($('<li>').text(msg));
-    });
-    </script>
-  </body> -->
 </html>

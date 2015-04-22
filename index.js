@@ -17,16 +17,14 @@ app.get('/*', function(req, res){
   res.sendfile('index.html');
 });
 var curentNsp;
+    // curentNsp = socket.handshake.headers.referer;
 
 io.on('connect', function(socket) {
-    curentNsp = socket.handshake.headers.referer;
-
     socket.on('room', function(room){
-      console.log('drwaing on ', room);
         socket.join(room);
         socket.on('drawing', function(drawObj){
-        socket.to(room).emit('drawing', drawObj);
-    });
+           socket.to(room).emit('drawing', drawObj);
+      });
     });
 
 

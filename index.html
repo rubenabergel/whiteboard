@@ -11,7 +11,7 @@
 currentUrl = window.location.href;
 var socket = io();
 
-
+socket.open(currentUrl).emit('room', currentUrl);
 socket.open(currentUrl).on('hi', function (data) {
     console.log('new fan', data);
 });
@@ -95,8 +95,7 @@ function draw() {
   }
 
 
-socket.open(currentUrl).on('drawing', function(drawObj){
-    console.log('I am receignin');
+socket.on('drawing', function(drawObj){
     ctx.beginPath();
     ctx.moveTo(drawObj.prevX, drawObj.prevY);
     ctx.lineTo(drawObj.currX, drawObj.currY);

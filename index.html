@@ -12,9 +12,7 @@ currentUrl = window.location.href;
 var socket = io();
 
 socket.open(currentUrl).emit('room', currentUrl);
-socket.open(currentUrl).on('hi', function (data) {
-    console.log('new fan', data);
-});
+
 
 
 var canvas, ctx, flag = false,
@@ -38,12 +36,15 @@ function init() {
     }, false);
     canvas.addEventListener("mousedown", function (e) {
         findxy('down', e)
+        socket.open(currentUrl).emit('mousedown', true);
     }, false);
     canvas.addEventListener("mouseup", function (e) {
         findxy('up', e)
+        // socket.open(currentUrl).emit('mouseup', true);
     }, false);
     canvas.addEventListener("mouseout", function (e) {
         findxy('out', e)
+         socket.open(currentUrl).emit('mouseout', true);
     }, false);
 
 
@@ -83,7 +84,7 @@ function color(obj) {
 
 function draw() {
     ctx.beginPath();
-    socket.open(currentUrl).emit('room', currentUrl);
+    // socket.open(currentUrl).emit('room', currentUrl);
     socket.open(currentUrl).emit('drawing', {'prevX':prevX, 'prevY':prevY,'currX':currX, 'currY':currY});
     ctx.moveTo(prevX, prevY);
     ctx.lineTo(currX, currY);
@@ -108,18 +109,18 @@ socket.on('drawing', function(drawObj){
 // socket.emit('getUrl', {'currentUrl':window.location.href});
 
 
-//get old drawings
-// socket.on('PreviousDrawing', function(drawObj){
-//     drawObj.forEach(function(element){
-//         ctx.beginPath();
-//         ctx.moveTo(element.prevX, element.prevY);
-//         ctx.lineTo(element.currX, element.currY);
-//         ctx.strokeStyle = x;
-//         ctx.lineWidth = y;
-//         ctx.stroke();
-//         ctx.closePath();
-//         })
-//     });
+socket.on('PreviousDrawing', function(drawObj){
+    console.log('je rrecoi', drawObj);
+    drawObj.forEach(function(element){
+        ctx.beginPath();
+        ctx.moveTo(element.prevX, element.prevY);
+        ctx.lineTo(element.currX, element.currY);
+        ctx.strokeStyle = x;
+        ctx.lineWidth = y;
+        ctx.stroke();
+        ctx.closePath();
+        })
+    });
 
 
 function erase() {

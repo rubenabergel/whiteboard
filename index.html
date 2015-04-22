@@ -3,14 +3,20 @@
   <head>
     <title>Socket.IO chat</title>
   </head>
-  <script src="/angoose/angoose-client.js"></script>
   <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
 
   <script src="/socket.io/socket.io.js"></script>
   <script type="text/javascript">
 
-
+currentUrl = window.location.href;
 var socket = io();
+
+
+socket.open(currentUrl).on('hi', function (data) {
+    console.log('new fan', data);
+});
+
+
 var canvas, ctx, flag = false,
     prevX = 0,
     currX = 0,
@@ -87,7 +93,9 @@ function draw() {
 
   }
 
-socket.on('drawing', function(drawObj){
+
+socket.open(currentUrl).on('drawing', function(drawObj){
+    console.log('I am receignin');
     ctx.beginPath();
     ctx.moveTo(drawObj.prevX, drawObj.prevY);
     ctx.lineTo(drawObj.currX, drawObj.currY);

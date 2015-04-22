@@ -2,7 +2,6 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
-var currentRoom;
 
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://rubenabergel:qwertyuiop@dogen.mongohq.com:10047/whiteboardDB');
@@ -18,15 +17,18 @@ app.get('/*', function(req, res){
   res.sendfile('index.html');
 });
 var curentNsp;
-// var userCount = 0;
 
 io.on('connect', function(socket) {
     curentNsp = socket.handshake.headers.referer;
-    socket.join(curentNsp);
-    socket.on('drawing', function(drawObj){
-      console.log('I am drwa');
-      socket.to(curentNsp).emit('drawing', drawObj);
+
+    socket.on('room', function(room){
+      console.log('drwaing on ', room);
+        socket.join(room);
+        socket.on('drawing', function(drawObj){
+        socket.to(room).emit('drawing', drawObj);
     });
+    });
+
 
 
 
@@ -64,7 +66,6 @@ io.on('connect', function(socket) {
 
 // });
 
-
-http.listen(3000, function(){
+http.listen(3000, function(err){
   console.log('listening on *:3000 with ruben');
 });

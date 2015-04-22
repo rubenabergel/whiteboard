@@ -83,7 +83,8 @@ function color(obj) {
 
 function draw() {
     ctx.beginPath();
-    socket.emit('drawing', {'prevX':prevX, 'prevY':prevY,'currX':currX, 'currY':currY});
+    socket.open(currentUrl).emit('room', currentUrl);
+    socket.open(currentUrl).emit('drawing', {'prevX':prevX, 'prevY':prevY,'currX':currX, 'currY':currY});
     ctx.moveTo(prevX, prevY);
     ctx.lineTo(currX, currY);
     ctx.strokeStyle = x;
@@ -105,21 +106,21 @@ socket.open(currentUrl).on('drawing', function(drawObj){
     ctx.closePath();
     });
 
-socket.emit('getUrl', {'currentUrl':window.location.href});
+// socket.emit('getUrl', {'currentUrl':window.location.href});
 
 
 //get old drawings
-socket.on('PreviousDrawing', function(drawObj){
-    drawObj.forEach(function(element){
-        ctx.beginPath();
-        ctx.moveTo(element.prevX, element.prevY);
-        ctx.lineTo(element.currX, element.currY);
-        ctx.strokeStyle = x;
-        ctx.lineWidth = y;
-        ctx.stroke();
-        ctx.closePath();
-        })
-    });
+// socket.on('PreviousDrawing', function(drawObj){
+//     drawObj.forEach(function(element){
+//         ctx.beginPath();
+//         ctx.moveTo(element.prevX, element.prevY);
+//         ctx.lineTo(element.currX, element.currY);
+//         ctx.strokeStyle = x;
+//         ctx.lineWidth = y;
+//         ctx.stroke();
+//         ctx.closePath();
+//         })
+//     });
 
 
 function erase() {

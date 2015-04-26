@@ -1,7 +1,7 @@
 <!-- <!doctype html> -->
 <html>
   <head>
-    <title>Socket.IO chat</title>
+    <title>WhiteBoard</title>
   </head>
   <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
 
@@ -14,7 +14,6 @@ var socket = io();
 socket.open(currentUrl).emit('room', currentUrl);
 
 
-
 var canvas, ctx, flag = false,
     prevX = 0,
     currX = 0,
@@ -22,8 +21,12 @@ var canvas, ctx, flag = false,
     currY = 0,
     dot_flag = false;
 
-var x = "black",
-    y = 2;
+var x;
+var y = 2;
+
+socket.on('NewColor', function(data){
+    x = data.color;
+})
 
 function init() {
     canvas = document.getElementById('can');
@@ -36,11 +39,9 @@ function init() {
     }, false);
     canvas.addEventListener("mousedown", function (e) {
         findxy('down', e)
-        socket.open(currentUrl).emit('mousedown', true);
     }, false);
     canvas.addEventListener("mouseup", function (e) {
         findxy('up', e)
-        // socket.open(currentUrl).emit('mouseup', true);
     }, false);
     canvas.addEventListener("mouseout", function (e) {
         findxy('out', e)
@@ -50,41 +51,9 @@ function init() {
 
 }
 
-function color(obj) {
-    switch (obj.id) {
-        case "green":
-            x = "green";
-            break;
-        case "blue":
-            x = "blue";
-            break;
-        case "red":
-            x = "red";
-            break;
-        case "yellow":
-            x = "yellow";
-            break;
-        case "orange":
-            x = "orange";
-            break;
-        case "black":
-            x = "black";
-            break;
-        case "white":
-            x = "white";
-            break;
-    }
-    if (x == "white") y = 14;
-    else y = 2;
-
-}
-
-
-
 
 function draw() {
     ctx.beginPath();
-    // socket.open(currentUrl).emit('room', currentUrl);
     socket.open(currentUrl).emit('drawing', {'prevX':prevX, 'prevY':prevY,'currX':currX, 'currY':currY});
     ctx.moveTo(prevX, prevY);
     ctx.lineTo(currX, currY);
@@ -96,48 +65,33 @@ function draw() {
   }
 
 
-socket.on('drawing', function(drawObj){
-    ctx.beginPath();
-    ctx.moveTo(drawObj.prevX, drawObj.prevY);
-    ctx.lineTo(drawObj.currX, drawObj.currY);
-    ctx.strokeStyle = x;
-    ctx.lineWidth = y;
-    ctx.stroke();
-    ctx.closePath();
-    });
 
-// socket.emit('getUrl', {'currentUrl':window.location.href});
-
-
-socket.on('PreviousDrawing', function(drawObj){
-    console.log('je rrecoi', drawObj);
-    drawObj.forEach(function(element){
+function createLines(drawObj){
+    ctx.strokeStyle = drawObj.color;
+    drawObj.lines.forEach(function(element){
         ctx.beginPath();
         ctx.moveTo(element.prevX, element.prevY);
         ctx.lineTo(element.currX, element.currY);
-        ctx.strokeStyle = x;
         ctx.lineWidth = y;
         ctx.stroke();
         ctx.closePath();
+    })
+}
+
+
+socket.on('drawing', function(drawObj){
+    createLines(drawObj);
+    });
+
+
+socket.on('PreviousDrawing', function(drawObj){
+    drawObj.forEach(function(element){
+        createLines(element);
         })
     });
 
 
-function erase() {
-    var m = confirm("Want to clear");
-    if (m) {
-        ctx.clearRect(0, 0, w, h);
-        document.getElementById("canvasimg").style.display = "none";
-    }
-}
 
-function save() {
-    document.getElementById("canvasimg").style.border = "2px solid";
-    var dataURL = canvas.toDataURL();
-    console.log(dataURL);
-    document.getElementById("canvasimg").src = dataURL;
-    document.getElementById("canvasimg").style.display = "inline";
-}
 
 function findxy(res, e) {
     if (res == 'down') {
@@ -173,41 +127,10 @@ function getCurrentUrl(){
     return window.location.href;
 }
 </script>
-<button onclick="getCurrentUrl()"></button>
+
   <body onload="init()">
-    <canvas id="can" width="400" height="400" style="position:absolute;top:10%;left:10%;border:2px solid;"></canvas>
-    <div style="position:absolute;top:12%;left:43%;">Choose Color</div>
-    <div style="position:absolute;top:15%;left:45%;width:10px;height:10px;background:green;" id="green" onclick="color(this)"></div>
-    <div style="position:absolute;top:15%;left:46%;width:10px;height:10px;background:blue;" id="blue" onclick="color(this)"></div>
-    <div style="position:absolute;top:15%;left:47%;width:10px;height:10px;background:red;" id="red" onclick="color(this)"></div>
-    <div style="position:absolute;top:17%;left:45%;width:10px;height:10px;background:yellow;" id="yellow" onclick="color(this)"></div>
-    <div style="position:absolute;top:17%;left:46%;width:10px;height:10px;background:orange;" id="orange" onclick="color(this)"></div>
-    <div style="position:absolute;top:17%;left:47%;width:10px;height:10px;background:black;" id="black" onclick="color(this)"></div>
-    <div style="position:absolute;top:20%;left:43%;">Eraser</div>
-    <div style="position:absolute;top:22%;left:45%;width:15px;height:15px;background:white;border:2px solid;" id="white" onclick="color(this)"></div>
-    <img id="canvasimg" style="position:absolute;top:10%;left:52%;" style="display:none;">
-    <input type="button" value="save" id="btn" size="30" onclick="save()" style="position:absolute;top:55%;left:10%;">
-    <input type="button" value="clear" id="clr" size="23" onclick="erase()" style="position:absolute;top:55%;left:15%;">
-</body>
-
- <!--  <body>
-    <ul id="messages"></ul>
-    <form action="">
-      <input id="m" autocomplete="off" /><button>Send</button>
-    </form>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
-    <script>
-    var socket = io();
-    $('form').submit(function(){
-    socket.emit('chat message', $('#m').val());
-      $('#m').val('');
-      return false;
-    });
-
-    socket.on('chat message', function(msg){
-      $('#messages').append($('<li>').text(msg));
-    });
-    </script>
-  </body> -->
+    <h4 style="text-align:center">Welcome to our Collaborative whiteBoard</h4>
+    <p style="text-align:center; font-size:10px">each URL is its own room - join the room you want by typing its url in your browser</p>
+    <canvas id="can" width="400" height="400" style="position:absolute;top:20%;left:30%;border:2px solid;"></canvas>
+  </body>
 </html>

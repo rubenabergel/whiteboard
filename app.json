@@ -1,0 +1,6 @@
+{
+  "name": "CollabWhiteBoard",
+  "description": "A easy collaborative whiteboard app",
+  "repository": "https://github.com/rubenabergel/collabWhiteboard",
+  "keywords": ["node", "express", "static"]
+}

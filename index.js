@@ -80,7 +80,7 @@ function createRoom(currentUrl) {
     return newRoom;
 }
 
-
-http.listen(3000, function (err) {
-    console.log('listening on *:3000 with ruben');
+var port = process.env.PORT || 3000;
+http.listen(port, function (err) {
+    console.log('listening on *:3000');
 });

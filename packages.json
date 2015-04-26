@@ -1,6 +1,35 @@
+// {
+//   "name": "whiteboard",
+//   "version": "0.0.1",
+//   "description": "my first socket.io app",
+//   "dependencies": {},
+//   "engines": {
+//     "node": "0.10.x",
+//     "npm": "2.1.x"
+//   }
+// }
 {
-  "name": "socket-chat-example",
-  "version": "0.0.1",
-  "description": "my first socket.io app",
-  "dependencies": {}
+  "name": "whitebaord",
+  "version": "0.1.3",
+  "description": "whitebaord",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "~4.9.x"
+  },
+  "engines": {
+    "node": "0.12.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rubenabergel/whiteboard"
+  },
+  "keywords": [
+    "node",
+    "heroku",
+    "express"
+  ],
+  "license": "MIT"
 }
